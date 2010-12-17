@@ -5,9 +5,14 @@ How to compile:
 2) add binary to path
 3) enjoy
 
+How to use:
+-----------
 
-How to re-index dictionary
---------------------------
+1) dict word
+
+
+How to re-index dictionary:
+---------------------------
 
 1) delete index_main from root directory
 2) delete data/index*
