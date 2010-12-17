@@ -1,3 +1,14 @@
+How to compile:
+1) ghc --make dict
+2) add binary to path
+3) enjoy
+
+How to re-index dictionary
+1) delete index_main from root directory
+2) delete data/index*
+3) run dictionary executable 
+
 Dictionary format:
 
-word[tab]translation
+word1[tab]translation
+word2[tab]translation
