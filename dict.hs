@@ -41,8 +41,7 @@ main = do search         <- getArgs
                               Just s -> readFile (index_path ++ "index" ++ (show s))
                               _      -> readFile file_path
           
-          let li         = lines wl
-          let dict       = [tupleize (splitOn "\t" x) | x <- li]
+          let dict       = [tupleize (splitOn "\t" x) | x <- lines wl]
           
           case search of
             [a]   -> output $ join $ lookup (Just a) dict
@@ -82,8 +81,8 @@ index = do file_path  <- dictfile
                    is_ch idx line      = not $ contains idx line
                    location path idx   = path ++ "index" ++ (show $ snd idx)
 
+counter :: [[Char]] -> [(Char, Int)] -> [Char] -> Int -> [(Char,Int)]
 counter [] acc _ _ = acc
- 
 counter (l:ls) acc last count = case l of
                                   (lh:_) -> if any (toLower lh==) last
                                                then counter ls acc last (count+1) 
