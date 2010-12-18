@@ -1,7 +1,6 @@
 import Data.List.Split (splitOn)
 import System.Environment (getArgs)
 import Control.Monad (join)
-import Data.Char (toLower)
 import Data.List (sort)
 import System.Directory (getCurrentDirectory)
 import System.Directory (doesFileExist)
