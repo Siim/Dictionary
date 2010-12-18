@@ -37,7 +37,7 @@ main = do search         <- getArgs
 
           file_path      <- dictfile
           index_path     <- add_to_path "data/"
-          wl             <- case lookup (head (head search)) idx of 
+          wl             <- case lookup (head $ head search) idx of 
                               Just s -> readFile (index_path ++ "index" ++ (show s))
                               _      -> readFile file_path
           
@@ -84,7 +84,7 @@ index = do file_path  <- dictfile
 counter :: [[Char]] -> [(Char, Int)] -> [Char] -> Int -> [(Char,Int)]
 counter [] acc _ _ = acc
 counter (l:ls) acc last count = case l of
-                                  (lh:_) -> if any (toLower lh==) last
+                                  (lh:_) -> if any (lh==) last
                                                then counter ls acc last (count+1) 
-                                               else counter ls ((toLower lh, count):acc) (toLower lh:last) (count+1)
+                                               else counter ls ((lh, count):acc) (lh:last) (count+1)
                                   _      -> counter ls acc last (count+1)
