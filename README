@@ -11,6 +11,13 @@ How to use:
 1) dict word
 
 
+Depends on packages:
+--------------------
+
+TODO: add cabal file 
+executable-path, split
+
+
 How to re-index dictionary:
 ---------------------------
 
