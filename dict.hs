@@ -22,68 +22,70 @@ indexfile = add_to_path "index_main"
 
 
 main :: IO ()
-main = do search  <- getArgs
-          indexfile_path <- indexfile
-          indexed <- doesFileExist indexfile_path
+main = do search         <- getArgs
+          ifile          <- indexfile
 
-          idata <- case indexed of
-                     True -> readFile indexfile_path
-                     _    -> do putStrLn "Index not found. Indexing..."
-                                index
-                                readFile indexfile_path
-          
-          -- get index
-          let idx =  (read idata) :: [(Char,Int)]
+          idata          <- (\exists -> if exists
+                                           then readFile ifile
+                                           else do putStrLn "Index not found. Indexing..."
+                                                   index
+                                                   readFile ifile
+                            ) =<< (doesFileExist ifile)
 
-          -- open appropriate index file
-          file_path <- dictfile
-          index_path <- add_to_path "data/"
-          wl <- case lookup (head (head search)) idx of 
-                       Just s -> readFile (index_path ++ "index" ++ (show s))
-                       _      -> readFile file_path
           
-          let li = lines wl
-          let dict = [tupleize (splitOn "\t" x) | x <- li]
+          let idx        =  (read idata) :: [(Char,Int)]
+
+          file_path      <- dictfile
+          index_path     <- add_to_path "data/"
+          wl             <- case lookup (head (head search)) idx of 
+                              Just s -> readFile (index_path ++ "index" ++ (show s))
+                              _      -> readFile file_path
+          
+          let li         = lines wl
+          let dict       = [tupleize (splitOn "\t" x) | x <- li]
           
           case search of
             [a]   -> output $ join $ lookup (Just a) dict
-
-            _     -> putStrLn "Nothing"
+            _     -> putStrLn "Nothing found"
           
-          where tupleize :: [a] -> (Maybe a, Maybe a)
-                tupleize [a,b]   = (Just a, Just b)
-                tupleize _       = (Nothing, Nothing)
+            where tupleize :: [a] -> (Maybe a, Maybe a)
+                  tupleize [a,b]   = (Just a, Just b)
+                  tupleize _       = (Nothing, Nothing)
 
-                output (Just a)  = putStrLn a 
-                output _         = putStrLn "Nothing"
+                  output (Just a)  = putStrLn a 
+                  output _         = putStrLn "Nothing"
 
 
 -- Index dictionary for better berformance
 -- Spit it into smaller files
 -- TODO: split mapM oneliner into more smaller functions
-index :: IO ()
-index = do file_path <- dictfile
-           file   <- readFile file_path
+index :: IO [()]
+index = do file_path  <- dictfile
+           file       <- readFile file_path
            -- file lines
            let flines = sort $ lines file
-           let cnt = counter flines [] [] 1
-           indexfile_path <- indexfile
-           writeFile indexfile_path $ show $ reverse cnt
+           let cnt    = counter flines [] [] 1
+           ifile      <- indexfile
            index_path <- add_to_path "data/"
-           mapM (\idx -> writeFile (index_path ++ "index" ++ (show $ snd idx)) (unlines (contents idx flines))) cnt
-           return ()
-             where contents idx flines = takeWhile (is_ch idx) $ dropWhile (contains idx) flines
-                   contains idx line = case line of
-                                         (h:_) ->  h /= (fst idx)
-                                         _     -> True
 
-                   is_ch idx line = case line of
-                                      (h:_) -> h == (fst idx)
-                                      _     -> False
+           writeFile ifile $ show $ reverse cnt
+
+           mapM (\idx -> 
+                  writeFile (location index_path idx) (unlines $ contents idx flines)
+                ) cnt
+
+             where contents idx flines = takeWhile (is_ch idx) $ dropWhile (contains idx) flines
+                   contains idx line   = case line of
+                                           (h:_) ->  h /= (fst idx)
+                                           _     -> True
+
+                   is_ch idx line      = not $ contains idx line
+                   location path idx   = path ++ "index" ++ (show $ snd idx)
+
 counter [] acc _ _ = acc
-counter (l:ls) acc last count = 
-  case l of
-    (lh:_) -> if any ((toLower lh)==) last
-                then counter ls acc last (count+1) 
-                else counter ls (((toLower lh),count):acc) ((toLower lh):last) (count+1)
-    _      -> counter ls acc last (count+1)
+ 
+counter (l:ls) acc last count = case l of
+                                  (lh:_) -> if any (toLower lh==) last
+                                               then counter ls acc last (count+1) 
+                                               else counter ls ((toLower lh, count):acc) (toLower lh:last) (count+1)
+                                  _      -> counter ls acc last (count+1)
